@@ -1,3 +1,4 @@
-(defproject es.corygil/ahocorasick "1.0.0-SNAPSHOT"
-  :description "Fast string searching in pure Clojure"
-  :dependencies [[org.clojure/clojure "1.3.0"]])
+(defproject es.corygil/ahocorasick "1.0.1"
+  :description "Fast string searching"
+  :dependencies [[org.clojure/clojure "1.3.0"]
+                 [com.aliasi/lingpipe "4.0.1"]])
