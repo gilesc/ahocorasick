@@ -60,8 +60,9 @@
     (add-fail-transitions! root)
     root))
 
+;;TODO: this (concat query " ") is not the right way to solve the problem
 (defn search [trie query]
-  (loop [idx 0 node trie q query results []]
+  (loop [idx 0 node trie q (concat query " ") results []]
     (let [[nidx nnode nq] (if (terminal? node)
                             [idx @(.fail node) q]
                             [(inc idx) (transition node (first q)) (rest q)])]
