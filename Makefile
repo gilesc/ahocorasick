@@ -1,5 +1,8 @@
-libahocorasick.so : ahocorasick.cc
-	g++ ahocorasick.cpp -fPIC -shared -o libahocorasick.so
+libahocorasick.so : ahocorasick.cpp
+	g++ -std=c++0x ahocorasick.cpp -fPIC -shared -o libahocorasick.so
+
+ahocorasick :
+	g++ -std=c++0x ahocorasick.cpp -o ahocorasick
 
 install : libahocorasick.so
 	cp libahocorasick.so /usr/lib/
