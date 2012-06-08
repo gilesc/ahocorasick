@@ -13,6 +13,7 @@ struct Match {
 class Trie {
 public:
 	Trie();
+	Trie(bool case_sensitive);
 	vector<Match> search(string s);
 };
 
