@@ -1,2 +1,5 @@
 *.so
 *.swp
+.scons*
+*.pc
+*.os
