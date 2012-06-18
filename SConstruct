@@ -1,8 +1,8 @@
 from os.path import join
 import string
 
-env = Environment(CCFLAGS="-std=c++0x")
-env["prefix"] = "/usr/local"
+env = Environment(CCFLAGS="-std=c++0x", CPPPATH=".")
+env["prefix"] = "/usr"
 
 def scanreplace(target, source, env):
 	with open(str(source[0]), "r") as tmpl:

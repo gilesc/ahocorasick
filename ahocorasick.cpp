@@ -1,27 +1,14 @@
 #include <iostream>
 #include <vector>
+#include <set>
 #include <fstream>
 #include <sstream>
 #include <memory>
 #include <algorithm>
+#include <ahocorasick.hpp>
 using namespace std;
 
 namespace ahocorasick {
-
-class Node {
-public:
-	Node() {};
-	Node(char c) {content = c; terminal = false;}
-	int id;
-	int depth();
-	char content;		
-	bool terminal;
-	vector<shared_ptr<Node> > children;
-	shared_ptr<Node> parent;
-	shared_ptr<Node> fail;
-	shared_ptr<Node> find(char c);
-	shared_ptr<Node> find_or_fail(char c);
-};
 
 int Node::depth() {
 	if (parent == NULL)
@@ -48,38 +35,20 @@ Node::find_or_fail(char c) {
 	}
 }
 
-struct Match {
-	int id;
-	int start;
-	int end;
-};
-
-class Trie {
-public:
-	Trie();
-	Trie(bool case_sensitive);
-	shared_ptr<Node> root;
-	void add(string s) {add(-1,s);};
-	void add(int id, string s);
-	void build();
-	vector<Match> search(string s);
-private:
-	void add_fail_transitions(shared_ptr<Node> n);
-	bool case_sensitive;
-};
-
 Trie::Trie() {
+	Settings s;
+	settings = s;
 	root = shared_ptr<Node>(new Node());
 }
 
-Trie::Trie(bool is_case_sensitive) {
-	case_sensitive = is_case_sensitive;
+Trie::Trie(Settings& s) {
+	settings = s;
 	root = shared_ptr<Node>(new Node());
 }
 
 void Trie::add(int id, string s) {
 	shared_ptr<Node> current = root;
-	if (!case_sensitive)
+	if (!settings.case_sensitive)
 		transform(s.begin(), s.end(), s.begin(), ::tolower);
 	for (int i=0; i<s.length(); i++) {
 		shared_ptr<Node> child = current->find(s[i]);
@@ -119,23 +88,70 @@ void Trie::build() {
 	root->fail = root;
 }
 
+set<int> word_boundaries(const string& s) {
+	set<int> b;
+	b.insert(0);
+	for (int i=0; i<s.size()-1; i++)
+		if (s[i]==' ' && s[i+1]!=' ')
+			b.insert(i+1);	
+	b.insert(s.size()); //Handle ending punctuation. Need to handle multiple sentences in text case
+	b.insert(s.size()+1);
+	return b;
+}
+
 vector<Match>
 Trie::search(string s) {
-	if (!case_sensitive)
-		transform(s.begin(), s.end(), s.begin(), ::tolower);
-	shared_ptr<Node> current = root;	
 	vector<Match> matches;
+	if (s.size() == 0)
+		return matches;
+
+	set<int> boundaries;
+	if (settings.break_on_word_boundaries)
+		boundaries = word_boundaries(s);
+
+	if (!settings.case_sensitive)
+		transform(s.begin(), s.end(), s.begin(), ::tolower);
+
+	shared_ptr<Node> current = root;	
 	for (int i=0; i<s.length(); i++) {
+		while (!current->find(s[i]) && current!=root)
+			current = current->fail;
 		current = current->find_or_fail(s[i]);
 		if (current->terminal) {
 			Match match;
 			match.id = current->id;
 			match.start = i + 1 - current->depth();
 			match.end = i;
+			if (settings.break_on_word_boundaries) {
+				if (boundaries.find(match.start) == boundaries.end() ||
+						boundaries.find(match.end+2) == boundaries.end())
+					continue;
+			}
 			matches.push_back(match);
 		}
 	}
 	return matches;
+}
+
+struct match_length_key {
+	inline bool operator() (const Match& m1, const Match& m2) {
+		return m1.length() > m2.length();
+	}
+};
+
+vector<Match>
+remove_overlaps(vector<Match>& v) {
+	sort(v.begin(), v.end(), match_length_key());
+	vector<Match> out;
+	for (Match m1 : v) {
+		bool add = true;
+		for (Match m2 : out)
+			if (!m1.overlaps(m2))
+				add = false;
+		if (add)
+			out.push_back(m1);
+	}
+	return out;
 }
 
 }
