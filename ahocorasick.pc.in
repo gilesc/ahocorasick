@@ -1,4 +1,4 @@
-Name: libahocorasick
+Name: ahocorasick
 Description: C++ Aho-Corasick implementation
 Version: 1.0.0
 Cflags = -I${prefix}/include

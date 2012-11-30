@@ -11,11 +11,11 @@ def scanreplace(target, source, env):
 		out.write(result)
 
 env["BUILDERS"]["ScanReplace"] = Builder(action=scanreplace, src_suffix=".in")
-env.ScanReplace("libahocorasick.pc", "libahocorasick.pc.in")
+env.ScanReplace("ahocorasick.pc", "ahocorasick.pc.in")
 
 lib = env.SharedLibrary("ahocorasick", "ahocorasick.cpp")
 
 installs = (("lib",lib), ("include", "ahocorasick.hpp"), 
-	("lib/pkgconfig", "libahocorasick.pc"))
+	("lib/pkgconfig", "ahocorasick.pc"))
 for (tgtdir,src) in installs:
 	env.Alias("install", env.Install(join(env["prefix"], tgtdir), src))
